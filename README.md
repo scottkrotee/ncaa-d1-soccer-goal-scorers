@@ -11,9 +11,9 @@ This project scrapes the top NCAA men's soccer goal scorers data from the NCAA w
 
 ## Requirements
 Before running this code, ensure you have the following Python packages installed:
-'''bash
+```bash
 pip install requests beautifulsoup4 pandas plotly
-'''
+```
 ## Libraries Used:
 - requests: For sending HTTP requests to fetch the HTML content from the web.
 - BeautifulSoup: For parsing HTML and extracting the data from tables.
@@ -40,7 +40,7 @@ Two visualizations are generated from the scraped data:
 
 # Running the Script
 1. Scrape the NCAA website by running the following code:
-'''python
+```python
 #Run the script to scrape and save the data
 for page in pages:
     url = base_url + page
@@ -57,7 +57,7 @@ if all_headers and all_rows:
     # Data visualization
     display_table(df)
     display_scatter(df)
-'''
+```
 2. The script will save the data as ncaa_goal_scorers_stats.csv and open the visualizations in your default web browser.
 
 ## Error Handling
