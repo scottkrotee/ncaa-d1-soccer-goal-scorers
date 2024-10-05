@@ -1,5 +1,5 @@
 ### Author: Scott Krotee - Sept 7, 2024 ###
- 
+
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
@@ -128,38 +128,41 @@ if all_headers and all_rows:
         hover_text = [create_hover_text(row) for i, row in grouped.iterrows()]
 
         # Color intensity based on Goals Per Game and larger markers for top players
-        marker_size = [14 if row['Name'] in top_3_names else 10 for _, row in df.iterrows()]  # Larger for top 3
+        marker_size = [20 if row['Name'] in top_3_names else 16 for _, row in df.iterrows()]  # Larger for top 3
 
         # Stagger names, group them, and avoid showing top 3 names twice
         player_labels = [
             f"{row['Player Count']} Players" if row['Player Count'] > 2
-            else ', '.join(df[(df['Per Game'] == row['Per Game']) & (df['Games'] == row['Games'])]['Name'].tolist()) 
+            else ', '.join(
+                name for name in df[(df['Per Game'] == row['Per Game']) & (df['Games'] == row['Games'])]['Name'].tolist()
+                if name not in top_3_names)  # Exclude top 3 names from white labels
             for _, row in grouped.iterrows()
-            if ', '.join(df[(df['Per Game'] == row['Per Game']) & (df['Games'] == row['Games'])]['Name'].tolist()) not in top_3_names
         ]
 
         # Scatter plot for grouped players
         fig.add_trace(go.Scatter(
             x=grouped['Per Game'], y=grouped['Games'], 
             mode='markers+text',  # Markers and text
-            marker=dict(size=marker_size, color=grouped['Per Game'], colorscale='Viridis', opacity=0.8, line=dict(width=2, color='white')),
+            marker=dict(size=marker_size, color=grouped['Per Game'], colorscale='Viridis', opacity=0.8, line=dict(width=1, color='white')),
             text=player_labels,  # Show player names or "X Players"
-            textposition='top center',  # Position the label on top
+            textposition='bottom center',  # Adjust label position to reduce overlap
             hovertext=hover_text,  # Use full hover text for all details
             hoverinfo='text',  # Show only the hover text
-            textfont=dict(size=14)  # Increase text size
+            textfont=dict(size=16)  # Increase text size
         ))
 
         # Highlight the top 3 players with yellow annotations
         for i, row in top_3.iterrows():
             fig.add_annotation(
-                x=row['Per Game'], y=row['Games'],
+                x=row['Per Game'], 
+                y=row['Games'],
                 text=row['Name'],  # Show player name for top 3
                 showarrow=True,
                 arrowhead=2,
-                ax=-20,
-                ay=-30,
-                font=dict(size=18, color="yellow")  # Increase annotation text size
+                ax=-80 + (i * 80),  # Vary horizontal offset based on index to spread out labels
+                ay=-100 + (i * 60),  # Vary vertical offset based on index to stagger labels
+                font=dict(size=20, color="yellow"),  # Increase annotation text size
+                arrowcolor="yellow"  # Match arrow color to the text color for clarity
             )
 
         # Add a label over the top 3 players in a modern, lower-opacity box
@@ -168,14 +171,14 @@ if all_headers and all_rows:
             y=(top_3['Games'].max() + 2),  # Slightly above the top 3 players' y-axis position
             text="NCAA Most Dangerous Goal Scorers",
             showarrow=False,
-            font=dict(size=18, color="red"),  # Customize font size and color
+            font=dict(size=20, color="red"),  # Customize font size and color
             bgcolor="rgba(50, 50, 50, 0.6)",  # Semi-transparent background
             bordercolor="white",
             borderwidth=2,
             borderpad=10
         )
 
-        # Set plot background and styles
+        # Set plot background and styles with faint gridlines
         fig.update_layout(
             title='Goals Per Game vs. Games Played (Player Counts and Names)',
             xaxis_title='Goals Per Game',
@@ -185,8 +188,8 @@ if all_headers and all_rows:
             font=dict(color='white')
         )
 
-        fig.update_xaxes(showgrid=False, zeroline=False, color='white')
-        fig.update_yaxes(showgrid=False, zeroline=False, color='white')
+        fig.update_xaxes(showgrid=True, gridwidth=0.5, gridcolor='rgba(255,255,255,0.1)', zeroline=False, color='white')  # Faint x-axis gridlines
+        fig.update_yaxes(showgrid=True, gridwidth=0.5, gridcolor='rgba(255,255,255,0.1)', zeroline=False, color='white')  # Faint y-axis gridlines
 
         fig.show()
 
